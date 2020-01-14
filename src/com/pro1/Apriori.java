@@ -1,6 +1,9 @@
 package com.pro1;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.util.*;
 
 /** The class encapsulates an implementation of the Apriori algorithm
@@ -107,9 +110,9 @@ public class Apriori extends Observable {
 
     /** outputs a message in Sys.err if not used as library */
     private void log(String message) {
-        //if (!usedAsLibrary) {
+        if (!usedAsLibrary) {
             System.out.println(message);
-       // }
+        }
     }
 
     /** computes numItems, numTransactions, and sets minSup */

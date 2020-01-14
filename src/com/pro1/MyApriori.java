@@ -1,30 +1,30 @@
 package com.pro1;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Callable;
 
-public class MyApriori implements Observer {
+public class MyApriori implements Observer, Callable<Void> {
 
     String datasetFilename;
 
     // < Product, Occurs>
     private Map<Integer, Integer> topProducts;
-    private List<int[]> frequentItemSets;
+    private Set<Set<Integer>> frequentItemSets;
     private long totalProducts = 0;
     private long totalTransactions = 0;
 
-    List<Set<Integer>> transactionsSet = new ArrayList<>();
+    private Set<Rule> rules = new HashSet<>();
+    private double minSupport = 0.4;
+    private double minConfidence = 0.8;
 
-    public static void main(String[] args) throws Exception {
-        new MyApriori("res/retail.me.txt").compute(0.4, 0.8);
-    }
+    private List<Set<Integer>> transactionsSet = new ArrayList<>();
 
     MyApriori(String filename) throws IOException {
-        datasetFilename = filename;
-        frequentItemSets = new LinkedList<>();
+        this.datasetFilename = filename;
+        this.frequentItemSets = new HashSet<>();
         Map<Integer, Integer> productsOccurs = new LinkedHashMap<>();
 
         String line;
@@ -55,34 +55,41 @@ public class MyApriori implements Observer {
     }
 
 
-    public void compute(double support, double confidence) throws Exception {
-        Apriori ap = new Apriori(new String[] {datasetFilename, support+""}, this);
+    @Override
+    public Void call() throws Exception
+    {
+        this.rules.clear();
+        this.frequentItemSets.clear();
 
-        Set<Integer> frequentItemset = new HashSet<>(Arrays.asList(1, 2, 3));
-        Set<Rule> rules = GetRules(frequentItemset, 0.8);
+        new Apriori(new String[] {datasetFilename, minSupport+""}, this);
 
-        for (Rule rule : rules) {
-            System.out.println(rule);
+        for (Set<Integer> frequentItemset : frequentItemSets) {
+            if(frequentItemset.size() <= 1)
+                continue;
+
+            rules.addAll(GetRules(frequentItemset));
         }
+        return null;
     }
 
+    public void setVariables(double minSupport, double minConfidence) {
+        this.minSupport = minSupport;
+        this.minConfidence = minConfidence;
+    }
 
     @Override
     public void update(Observable o, Object arg) {
         int[] itemSet = (int[]) arg;
-        frequentItemSets.add(itemSet);
+        Set<Integer> frequentItemset = new HashSet<>();
+        for (int item : itemSet)
+            frequentItemset.add(item);
 
-        // Associative rules
-        if (itemSet.length > 1) {
-            //
-        }
+        frequentItemSets.add(frequentItemset);
     }
 
-    public Set<Rule> GetRules(Set<Integer> frequentItemset, double minConf) {
+    public Set<Rule> GetRules(Set<Integer> frequentItemset) {
         Set<Rule> output = new HashSet<>();
-        Set<Integer> prunedRules = new HashSet<>();
-
-        //Create empty rule from frequentItemset
+        Set<Rule> prunedRules = new HashSet<>();
         Rule rootRule = new Rule(frequentItemset, new HashSet<>());
 
         Set<Rule> rulesToCheck = Permutation.getNextRulesTreeLevel(rootRule, prunedRules);
@@ -90,24 +97,17 @@ public class MyApriori implements Observer {
             Rule candidate = rulesToCheck.iterator().next();
             rulesToCheck.remove(candidate);
 
-            System.out.println("checking "+candidate);
-            double confidence = countConfidence(candidate, transactionsSet);
-            if (confidence >= minConf) {
+            if (countConfidence(candidate, transactionsSet) >= minConfidence) {
                 output.add(candidate);
-                System.out.println("OK!: conf"+confidence);
 
-                if(candidate.getAntecedent().size() > 1) {
+                if (candidate.getAntecedent().size() > 1) {
                     Set<Rule> children = Permutation.getNextRulesTreeLevel(candidate, prunedRules);
                     rulesToCheck.addAll(children);
                 }
-            }
-            else
-            {
-                prunedRules.addAll(candidate.getAntecedent()); //TODO
-                System.out.println("conf: "+confidence+" add to prune rules: "+candidate.getAntecedent());
+            } else {
+                prunedRules.add(candidate);
             }
         }
-
         return output;
     }
 
@@ -139,5 +139,20 @@ public class MyApriori implements Observer {
 
     public long getTotalTransactions() {
         return totalTransactions;
+    }
+
+    public Set<Set<Integer>> getFrequentItemSets() {
+        return frequentItemSets;
+    }
+
+    public Set<Rule> getRules() {
+        return rules;
+    }
+
+    public void printResults() {
+        System.out.println("--- Frequent Itemsets ---");
+        frequentItemSets.forEach(System.out::println);
+        System.out.println("--- Rules ---");
+        rules.forEach(System.out::println);
     }
 }

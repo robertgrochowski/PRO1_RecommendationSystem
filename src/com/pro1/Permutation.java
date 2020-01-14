@@ -7,19 +7,11 @@ import java.util.Set;
 class Permutation {
 
     //https://www.geeksforgeeks.org/print-subsets-given-size-set/
-    /* arr[]  ---> Input Array
-    data[] ---> Temporary array to store current combination
-    start & end ---> Staring and Ending indexes in arr[]
-    index  ---> Current index in data[]
-    r ---> Size of a combination to be printed */
-
-    private Permutation() {
-
-    }
+    private Permutation() { }
 
     private Set<Set<Integer>> combinations = new HashSet<>();
     private void combinationUtil(Integer arr[], int n, int r,
-                                int index, int data[], int i, Set<Integer> ignoreItems)
+                                int index, int data[], int i)
     {
         // Current combination is ready to be printed,
         // print it
@@ -28,13 +20,10 @@ class Permutation {
             Set<Integer> comb = new HashSet<>();
             for (int j = 0; j < r; j++)
             {
-                if(ignoreItems.contains(data[j])) //TODO!!
-                    return;
-
-                System.out.print(data[j] + " ");
+                //System.out.print(data[j] + " ");
                 comb.add(data[j]);
             }
-            System.out.println();
+            //System.out.println();
             combinations.add(comb);
             return;
         }
@@ -47,18 +36,18 @@ class Permutation {
         // location
         data[index] = arr[i];
         combinationUtil(arr, n, r, index + 1,
-                data, i + 1, ignoreItems);
+                data, i + 1);
 
         // current is excluded, replace it with
         // next (Note that i+1 is passed, but
         // index is not changed)
-        combinationUtil(arr, n, r, index, data, i + 1, ignoreItems);
+        combinationUtil(arr, n, r, index, data, i + 1);
     }
 
     // The main function that prints all combinations
     // of size r in arr[] of size n. This function
     // mainly uses combinationUtil()
-    private void getCombination(Set<Integer> set, int n, int r, Set<Integer> ignoreItems)
+    private void getCombination(Set<Integer> set, int n, int r)
     {
         // A temporary array to store all combination
         // one by one
@@ -69,18 +58,28 @@ class Permutation {
         Integer[] setArray = new Integer[set.size()];
         set.toArray(setArray);
 
-        combinationUtil(setArray, n, r, 0, data, 0, ignoreItems);
-        System.out.println();
+        combinationUtil(setArray, n, r, 0, data, 0);
+        //System.out.println();
     }
 
-    public static Set<Rule> getNextRulesTreeLevel(Rule rule, Set<Integer> ignoreItems)
+    public static Set<Rule> getNextRulesTreeLevel(Rule rule, Set<Rule> ignoreItems)
     {
         Permutation p = new Permutation();
-        p.getCombination(rule.getAntecedent(), rule.getAntecedent().size(),rule.getAntecedent().size()-1, ignoreItems);
+        p.getCombination(rule.getAntecedent(), rule.getAntecedent().size(),rule.getAntecedent().size()-1);
 
         Set<Rule> ruleSet = new LinkedHashSet<>();
 
         for (Set<Integer> items : p.combinations) {
+            boolean ignore = false;
+
+            for (Rule ignoreRule : ignoreItems) {
+                if (ignoreRule.getAntecedent().containsAll(items)) {
+                    ignore = true;
+                    break;
+                }
+            }
+            if(ignore) continue;
+
             Set<Integer> antecedent = new HashSet<>(items);
             Set<Integer> consequence = rule.getElements();
             consequence.removeAll(antecedent);
@@ -88,21 +87,5 @@ class Permutation {
             ruleSet.add(new Rule(antecedent, consequence));
         }
         return ruleSet;
-    }
-
-    /* Driver function to check for above function */
-    public static void main(String[] args)
-    {
-        Set<Integer> antecedent = new HashSet<>();
-        Set<Integer> consequence = new HashSet<>();
-
-        antecedent.add(1); antecedent.add(2); antecedent.add(3);
-        consequence.add(4);
-
-        Rule rule = new Rule(antecedent, consequence);
-
-        Permutation per = new Permutation();
-        Set<Rule> rules = per.getNextRulesTreeLevel(rule, new HashSet<>());
-        System.out.println();
     }
 }
