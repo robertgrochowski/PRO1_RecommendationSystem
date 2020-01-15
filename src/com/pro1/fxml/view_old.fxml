@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.effect.Blend?>
 <?import javafx.scene.layout.*?>
-<AnchorPane fx:id="mainStage" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pro1.Controller">
+<AnchorPane fx:id="mainStage" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/11.0.1" fx:controller="com.pro1.Controller">
    <children>
       <TabPane prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE">
         <tabs>
@@ -179,13 +179,9 @@
                                                          </children>
                                                       </HBox>
                                                       <ScrollPane hbarPolicy="NEVER" prefHeight="210.0" prefWidth="280.0">
-                                                        <content>
-                                                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="213.0" prefWidth="278.0">
-                                                               <children>
-                                                                  <ListView fx:id="frequentItemsetList" prefWidth="278.0" />
-                                                               </children>
-                                                            </AnchorPane>
-                                                        </content>
+                                                         <content>
+                                                            <ListView fx:id="frequentItemsetList" prefHeight="208.0" prefWidth="278.0" />
+                                                         </content>
                                                       </ScrollPane>
                                                    </children>
                                                 </VBox>
@@ -218,11 +214,7 @@
                                                       </HBox>
                                                       <ScrollPane hbarPolicy="NEVER" prefHeight="210.0" prefWidth="280.0">
                                                          <content>
-                                                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="213.0" prefWidth="278.0">
-                                                               <children>
-                                                                  <ListView fx:id="rulesList" prefWidth="278.0" />
-                                                               </children>
-                                                            </AnchorPane>
+                                                            <ListView fx:id="rulesList" prefHeight="208.0" prefWidth="278.0" />
                                                          </content>
                                                       </ScrollPane>
                                                    </children>

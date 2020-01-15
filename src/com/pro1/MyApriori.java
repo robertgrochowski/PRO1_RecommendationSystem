@@ -1,5 +1,7 @@
 package com.pro1;
 
+import com.sun.javaws.exceptions.InvalidArgumentException;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -10,17 +12,16 @@ public class MyApriori implements Observer, Callable<Void> {
 
     String datasetFilename;
 
-    // < Product, Occurs>
+    //< Product, Occurs>
     private Map<Integer, Integer> topProducts;
     private Set<Set<Integer>> frequentItemSets;
+    private Set<Rule> rules;
+    private List<Set<Integer>> transactionsSet = new ArrayList<>();
+
     private long totalProducts = 0;
     private long totalTransactions = 0;
-
-    private Set<Rule> rules = new HashSet<>();
     private double minSupport = 0.4;
     private double minConfidence = 0.8;
-
-    private List<Set<Integer>> transactionsSet = new ArrayList<>();
 
     MyApriori(String filename) throws IOException {
         this.datasetFilename = filename;
@@ -58,7 +59,7 @@ public class MyApriori implements Observer, Callable<Void> {
     @Override
     public Void call() throws Exception
     {
-        this.rules.clear();
+        this.rules = new HashSet<>();
         this.frequentItemSets.clear();
 
         new Apriori(new String[] {datasetFilename, minSupport+""}, this);
@@ -72,7 +73,13 @@ public class MyApriori implements Observer, Callable<Void> {
         return null;
     }
 
-    public void setVariables(double minSupport, double minConfidence) {
+    void setVariables(double minSupport, double minConfidence) throws InvalidArgumentException
+    {
+        if(minSupport <= 0 || minSupport >= 1)
+            throw new InvalidArgumentException(new String[]{"Invalid value for minimum support"});
+        if(minConfidence <= 0 || minConfidence >= 1)
+            throw new InvalidArgumentException(new String[]{"Invalid value for minimum confidence"});
+
         this.minSupport = minSupport;
         this.minConfidence = minConfidence;
     }
@@ -87,7 +94,8 @@ public class MyApriori implements Observer, Callable<Void> {
         frequentItemSets.add(frequentItemset);
     }
 
-    public Set<Rule> GetRules(Set<Integer> frequentItemset) {
+    private Set<Rule> GetRules(Set<Integer> frequentItemset)
+    {
         Set<Rule> output = new HashSet<>();
         Set<Rule> prunedRules = new HashSet<>();
         Rule rootRule = new Rule(frequentItemset, new HashSet<>());
@@ -111,7 +119,7 @@ public class MyApriori implements Observer, Callable<Void> {
         return output;
     }
 
-    public double countConfidence(Rule rule, List<Set<Integer>> transactionsSet) {
+    private double countConfidence(Rule rule, List<Set<Integer>> transactionsSet) {
         Set<Integer> sum = new HashSet<>();
         sum.addAll(rule.getAntecedent());
         sum.addAll(rule.getConsequent());

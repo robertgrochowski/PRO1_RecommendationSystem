@@ -53,6 +53,8 @@ public class Controller {
     TextField frequentItemsetFilterField;
     @FXML
     TextField ruleItemsetFilterField;
+    @FXML
+    Label resultsDescriptionLabel;
 
     File dataFile;
     MyApriori apriori;
@@ -83,6 +85,7 @@ public class Controller {
             productsAmountText.setText(apriori.getTotalProducts() + "");
         } catch (IOException e) {
             alert(e.getMessage());
+            fileNameText.setText("No file loaded...");
         }
     }
 
@@ -98,13 +101,11 @@ public class Controller {
 
         try {
             apriori.setVariables(Double.parseDouble(minSupportField.getText()), Double.parseDouble(minConfidenceField.getText()));
-            //apriori.compute(Double.parseDouble(minSupportField.getText()), Double.parseDouble(minConfidenceField.getText()));
 
             Stage computingWindow = new Stage();
             computingWindow.setTitle("Connecting to the database");
-            computingWindow.setScene(new Scene(FXMLLoader.load(getClass().getResource("computingWindow.fxml"))));
+            computingWindow.setScene(new Scene(FXMLLoader.load(getClass().getResource("fxml/computingWindow.fxml"))));
 
-            // Specifies the modality for new window.
             computingWindow.initModality(Modality.WINDOW_MODAL);
             computingWindow.initStyle(StageStyle.UNDECORATED);
             computingWindow.initOwner(mainStage.getScene().getWindow());
@@ -123,6 +124,8 @@ public class Controller {
 
                             for (Rule rule : apriori.getRules())
                                 rulesList.getItems().add(rule.toString());
+
+                            resultsDescriptionLabel.setText("Frequent itemsets found: "+apriori.getFrequentItemSets().size()+", Rules found: "+apriori.getRules().size());
                         });
 
                     } catch (ExecutionException e) {
