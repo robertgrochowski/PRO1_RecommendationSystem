@@ -23,7 +23,7 @@ public class MyApriori implements Observer, Callable<Void> {
     private double minSupport = 0.4;
     private double minConfidence = 0.8;
 
-    MyApriori(String filename) throws IOException {
+    MyApriori(String filename) throws IOException, NumberFormatException {
         this.datasetFilename = filename;
         this.frequentItemSets = new HashSet<>();
         Map<Integer, Integer> productsOccurs = new LinkedHashMap<>();

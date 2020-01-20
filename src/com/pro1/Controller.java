@@ -13,7 +13,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -83,7 +82,7 @@ public class Controller {
 
             transactionsAmountText.setText(apriori.getTotalTransactions()+"");
             productsAmountText.setText(apriori.getTotalProducts() + "");
-        } catch (IOException e) {
+        } catch (Exception e) {
             alert(e.getMessage());
             fileNameText.setText("No file loaded...");
         }
