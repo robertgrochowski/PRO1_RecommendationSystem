@@ -55,9 +55,9 @@ public class Controller {
     @FXML
     Label resultsDescriptionLabel;
 
-    File dataFile;
-    MyApriori apriori;
-    ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private File dataFile;
+    private MyApriori apriori;
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     public void onImportFileButtonPressed(Event ev){
         FileChooser fileChooser = new FileChooser();
@@ -95,6 +95,8 @@ public class Controller {
             return;
         }
 
+        frequentItemsetFilterField.setText("");
+        ruleItemsetFilterField.setText("");
         frequentItemsetList.getItems().clear();
         rulesList.getItems().clear();
 
@@ -102,7 +104,6 @@ public class Controller {
             apriori.setVariables(Double.parseDouble(minSupportField.getText()), Double.parseDouble(minConfidenceField.getText()));
 
             Stage computingWindow = new Stage();
-            computingWindow.setTitle("Connecting to the database");
             computingWindow.setScene(new Scene(FXMLLoader.load(getClass().getResource("fxml/computingWindow.fxml"))));
 
             computingWindow.initModality(Modality.WINDOW_MODAL);
@@ -127,14 +128,9 @@ public class Controller {
                             resultsDescriptionLabel.setText("Frequent itemsets found: "+apriori.getFrequentItemSets().size()+", Rules found: "+apriori.getRules().size());
                         });
 
-                    } catch (ExecutionException e) {
-                        // Exception occurred, deal with it
+                    } catch (ExecutionException | InterruptedException e) {
                         alert(e.getMessage());
-                    } catch (InterruptedException e) {
-                        // Shouldn't happen, we're invoked when computation is finished
-                        alert(e.getMessage());
-                    }
-                    finally{
+                    } finally{
                         Platform.runLater(computingWindow::close);
                     }
                 }

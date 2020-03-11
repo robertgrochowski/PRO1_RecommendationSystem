@@ -10,7 +10,7 @@ import java.util.concurrent.Callable;
 
 public class MyApriori implements Observer, Callable<Void> {
 
-    String datasetFilename;
+    private String datasetFilename;
 
     //< Product, Occurs>
     private Map<Integer, Integer> topProducts;
@@ -18,14 +18,29 @@ public class MyApriori implements Observer, Callable<Void> {
     private Set<Rule> rules;
     private List<Set<Integer>> transactionsSet = new ArrayList<>();
 
-    private long totalProducts = 0;
+    private long totalProducts;
     private long totalTransactions = 0;
     private double minSupport = 0.4;
     private double minConfidence = 0.8;
 
     MyApriori(String filename) throws IOException, NumberFormatException {
         this.datasetFilename = filename;
-        this.frequentItemSets = new HashSet<>();
+        this.frequentItemSets = new TreeSet<>((o1, o2) -> {
+            if(o1.size() > o2.size())
+                return 1;
+            else if(o1.size() < o2.size())
+                return -1;
+            else {
+                int first = o1.iterator().next();
+                int second = o2.iterator().next();
+
+                if(first < second) return -1;
+                else if(first > second) return 1;
+
+                return o1.equals(o2) ? 0 : 1;
+            }
+        });
+
         Map<Integer, Integer> productsOccurs = new LinkedHashMap<>();
 
         String line;
@@ -59,7 +74,21 @@ public class MyApriori implements Observer, Callable<Void> {
     @Override
     public Void call() throws Exception
     {
-        this.rules = new HashSet<>();
+        this.rules = new TreeSet<>((o1, o2) -> {
+            if(o1.getAntecedent().size() < o2.getAntecedent().size())
+                return -1;
+            else if (o1.getAntecedent().size() > o2.getAntecedent().size())
+                return 1;
+            else {
+                int first = o1.getAntecedent().iterator().next();
+                int second = o2.getAntecedent().iterator().next();
+
+                if(first < second) return -1;
+                else if(first > second) return 1;
+
+                return o1.equals(o2) ? 0 : 1;
+            }
+        });
         this.frequentItemSets.clear();
 
         new Apriori(new String[] {datasetFilename, minSupport+""}, this);
@@ -87,7 +116,7 @@ public class MyApriori implements Observer, Callable<Void> {
     @Override
     public void update(Observable o, Object arg) {
         int[] itemSet = (int[]) arg;
-        Set<Integer> frequentItemset = new HashSet<>();
+        Set<Integer> frequentItemset = new TreeSet<>();
         for (int item : itemSet)
             frequentItemset.add(item);
 
@@ -137,23 +166,23 @@ public class MyApriori implements Observer, Callable<Void> {
         return sumOccurs / antecedentOccurs;
     }
 
-    public Map<Integer, Integer> getTopProducts() {
+    Map<Integer, Integer> getTopProducts() {
         return topProducts;
     }
 
-    public long getTotalProducts() {
+    long getTotalProducts() {
         return totalProducts;
     }
 
-    public long getTotalTransactions() {
+    long getTotalTransactions() {
         return totalTransactions;
     }
 
-    public Set<Set<Integer>> getFrequentItemSets() {
+    Set<Set<Integer>> getFrequentItemSets() {
         return frequentItemSets;
     }
 
-    public Set<Rule> getRules() {
+    Set<Rule> getRules() {
         return rules;
     }
 
